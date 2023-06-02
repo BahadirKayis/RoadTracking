@@ -6,7 +6,6 @@ plugins {
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
     id("kotlin-kapt")
-
 }
 
 android {
@@ -21,6 +20,13 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        kapt {
+            arguments {
+                arg("room.schemaLocation", "$projectDir/schemas")
+            }
+        }
+
     }
 
     buildTypes {
@@ -76,8 +82,10 @@ dependencies {
     //Room
     implementation("androidx.room:room-runtime:2.5.1")
     implementation("androidx.room:room-ktx:2.5.1")
-    ksp("androidx.room:room-compiler:2.5.1")
+    kapt("androidx.room:room-compiler:2.5.1")
     annotationProcessor("androidx.room:room-compiler:2.5.1")
+
+
 //    Kapt, Kotlin koduyla Java işlemcilerini kullanmanıza olanak tanırken,
 //    KSP (Kotlin Symbol Processing) daha hızlı çalışır ve Kotlin'in dil yapılarını daha iyi anlar.
 //    Kapt artık bakım modunda olduğundan, mümkünse KSP'ye geçilmesi önerilir. Bu geçiş, projenin yapılandırmasıyla

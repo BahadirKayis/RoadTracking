@@ -3,12 +3,14 @@ package com.example.roadtracking.presentation.home
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.roadtracking.delegation.viewmodel.VMDelegationImpl
 import com.example.roadtracking.common.extensions.collectIn
 import com.example.roadtracking.common.extensions.dateToLongConvert
 import com.example.roadtracking.common.extensions.titleCaseFirstChar
 import com.example.roadtracking.data.model.RoadUI
 import com.example.roadtracking.delegation.viewmodel.VMDelegation
+import com.example.roadtracking.delegation.viewmodel.VMDelegationImpl
+import com.example.roadtracking.domain.usecase.DeleteRoadItemUseCae
+import com.example.roadtracking.domain.usecase.GetMonthUseCase
 import com.example.roadtracking.domain.usecase.GetRoadUseCase
 import com.example.roadtracking.domain.usecase.SearchUseCase
 import com.example.roadtracking.domain.usecase.SetRoadUseCase
@@ -22,7 +24,9 @@ import javax.inject.Inject
 class HomeVM @Inject constructor(
     private val getRoadUseCase: GetRoadUseCase,
     private val setRoadUseCase: SetRoadUseCase,
-    private val searchUseCase: SearchUseCase
+    private val searchUseCase: SearchUseCase,
+    private val getMonthUseCase: GetMonthUseCase,
+    private val deleteRoadItemUseCase: DeleteRoadItemUseCae
 ) : ViewModel(),
     VMDelegation<HomeUIEffect, HomeUIEvent, HomeUIState> by VMDelegationImpl(HomeUIState()) {
 
@@ -34,6 +38,9 @@ class HomeVM @Inject constructor(
                 is HomeUIEvent.SaveData -> setRoadData(event.date, event.company)
                 is HomeUIEvent.ResultData -> setState(getCurrentState().copy(date = event.date))
                 is HomeUIEvent.SearchCompany -> searchCompany(event.company)
+                is HomeUIEvent.SelectMonth -> setEffect(HomeUIEffect.ShowMonthPicker)
+                is HomeUIEvent.DeleteRoadItem -> deleteRoadItem(event.roadUI)
+                is HomeUIEvent.SelectedMonth -> getMonthList(event.mont)
             }
         }
         getRoadData()
@@ -46,12 +53,19 @@ class HomeVM @Inject constructor(
     }
 
     private fun setRoadData(date: String, company: String) = viewModelScope.launch {
-        setRoadUseCase(
-            RoadUI(
-                dateInMillis = date.dateToLongConvert(),
-                company = company.titleCaseFirstChar()
+        if (date.isNotEmpty() && company.isNotEmpty()) {
+            setRoadUseCase(
+                RoadUI(
+                    dateInMillis = date.dateToLongConvert(),
+                    company = company.titleCaseFirstChar()
+                )
             )
-        )
+        } else setEffect(HomeUIEffect.ShowToast("Tarih ve firma boş bırakılamaz"))
+
+    }
+
+    private fun deleteRoadItem(road: RoadUI) = viewModelScope.launch {
+        deleteRoadItemUseCase(road)
     }
 
     private fun searchCompany(string: String) {
@@ -61,4 +75,9 @@ class HomeVM @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
+    private fun getMonthList(month: Int) {
+        getMonthUseCase(month).onEach {
+            setEffect(HomeUIEffect.SendMonth(it))
+        }.launchIn(viewModelScope)
+    }
 }

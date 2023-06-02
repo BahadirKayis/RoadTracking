@@ -15,13 +15,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object RoomModule {
-
     @Provides
     @Singleton
-    fun provideRoadRoomDB(@ApplicationContext appContext: Context): RoadTrackingDatabase =
-        Room.databaseBuilder(
+    fun provideRoadRoomDB(@ApplicationContext appContext: Context): RoadTrackingDatabase {
+
+
+        return Room.databaseBuilder(
             appContext, RoadTrackingDatabase::class.java, "recipeDatabase.db"
         ).build()
+    }
 
     @Provides
     @Singleton

@@ -1,15 +1,12 @@
 package com.example.roadtracking.presentation
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.widget.DatePicker
-import androidx.core.os.bundleOf
 import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.setFragmentResult
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import com.example.roadtracking.common.extensions.dateToStringConvert
 import com.example.roadtracking.presentation.home.HomeUIEvent
@@ -33,5 +30,34 @@ class DatePickerFragment : DialogFragment(), DatePickerDialog.OnDateSetListener 
         val month = c.get(Calendar.MONTH)
         val day = c.get(Calendar.DAY_OF_MONTH)
         return DatePickerDialog(activity as Context, this, year, month, day)
+    }
+}
+
+class MonthPickerDialogFragment : DialogFragment() {
+    private lateinit var viewmodel: HomeVM
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        viewmodel = ViewModelProvider(requireActivity())[HomeVM::class.java]
+        val months = arrayOf(
+            "Ocak",
+            "Şubat",
+            "Mart",
+            "Nisan",
+            "Mayıs",
+            "Haziran",
+            "Temmuz",
+            "Ağustos",
+            "Eylül",
+            "Ekim",
+            "Kasım",
+            "Aralık"
+        )
+
+        val builder = AlertDialog.Builder(requireContext())
+        builder.setTitle("Ay Seçimi")
+            .setItems(months) { dialog, which ->
+                viewmodel.setEvent(HomeUIEvent.SelectedMonth(which + 1))
+                dialog.dismiss()
+            }
+        return builder.create()
     }
 }

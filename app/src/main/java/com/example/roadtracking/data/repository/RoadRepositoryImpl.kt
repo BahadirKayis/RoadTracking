@@ -22,10 +22,20 @@ class RoadRepositoryImpl(private val localData: LocalDataSource) : RoadRepositor
     }
 
     override fun searchCompany(company: String): Flow<List<String>> = callbackFlow {
-        Log.e("RoadRepositoryImpl", "searchCompany: $company")
-        trySend(localData.searchCompany(company))
-
+        trySend(localData.searchCompanyName(company))
         awaitClose { channel.close() }
+    }
+
+    override fun sendMonth(month: Int): Flow<List<RoadUI>> {
+        Log.e("RoadRepositoryImpl", "sendMonth: $month")
+        return callbackFlow {
+            trySend(localData.sendMonth(month))
+            awaitClose { channel.close() }
+        }
+    }
+
+    override suspend fun deleteRoadItem(roadUI: RoadUI) {
+        localData.deleteRoadItem(roadUI)
     }
 
 }
