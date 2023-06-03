@@ -1,6 +1,5 @@
 package com.example.roadtracking.data.repository
 
-import android.util.Log
 import com.example.roadtracking.data.model.RoadUI
 import com.example.roadtracking.domain.repository.RoadRepository
 import com.example.roadtracking.domain.source.local.LocalDataSource
@@ -26,10 +25,9 @@ class RoadRepositoryImpl(private val localData: LocalDataSource) : RoadRepositor
         awaitClose { channel.close() }
     }
 
-    override fun sendMonth(month: Int): Flow<List<RoadUI>> {
-        Log.e("RoadRepositoryImpl", "sendMonth: $month")
+    override fun sendMonth(startOfMonth: Long, endOfMonth: Long): Flow<List<RoadUI>> {
         return callbackFlow {
-            trySend(localData.sendMonth(month))
+            trySend(localData.sendMonth(startOfMonth, endOfMonth))
             awaitClose { channel.close() }
         }
     }

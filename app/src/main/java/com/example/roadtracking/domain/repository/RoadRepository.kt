@@ -8,7 +8,6 @@ interface RoadRepository {
     suspend fun setRoad(road: RoadUI)
     fun getRoad(): Flow<List<RoadUI>>
     fun searchCompany(company: String): Flow<List<String>>
-
-    fun sendMonth(month: Int): Flow<List<RoadUI>>
+    fun sendMonth(startOfMonth: Long, endOfMonth: Long): Flow<List<RoadUI>>
     suspend fun deleteRoadItem(roadUI: RoadUI)
 }

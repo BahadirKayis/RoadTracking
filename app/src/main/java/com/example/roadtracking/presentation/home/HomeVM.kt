@@ -1,6 +1,5 @@
 package com.example.roadtracking.presentation.home
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.roadtracking.common.extensions.collectIn
@@ -9,6 +8,7 @@ import com.example.roadtracking.common.extensions.titleCaseFirstChar
 import com.example.roadtracking.data.model.RoadUI
 import com.example.roadtracking.delegation.viewmodel.VMDelegation
 import com.example.roadtracking.delegation.viewmodel.VMDelegationImpl
+import com.example.roadtracking.domain.converter.RoadExpensePdfConverter
 import com.example.roadtracking.domain.usecase.DeleteRoadItemUseCae
 import com.example.roadtracking.domain.usecase.GetMonthUseCase
 import com.example.roadtracking.domain.usecase.GetRoadUseCase
@@ -26,10 +26,10 @@ class HomeVM @Inject constructor(
     private val setRoadUseCase: SetRoadUseCase,
     private val searchUseCase: SearchUseCase,
     private val getMonthUseCase: GetMonthUseCase,
-    private val deleteRoadItemUseCase: DeleteRoadItemUseCae
+    private val deleteRoadItemUseCase: DeleteRoadItemUseCae,
+    private val pdfConverter: RoadExpensePdfConverter,
 ) : ViewModel(),
     VMDelegation<HomeUIEffect, HomeUIEvent, HomeUIState> by VMDelegationImpl(HomeUIState()) {
-
     init {
         viewModel(this)
         event.collectIn(viewModelScope) { event ->
@@ -40,10 +40,16 @@ class HomeVM @Inject constructor(
                 is HomeUIEvent.SearchCompany -> searchCompany(event.company)
                 is HomeUIEvent.SelectMonth -> setEffect(HomeUIEffect.ShowMonthPicker)
                 is HomeUIEvent.DeleteRoadItem -> deleteRoadItem(event.roadUI)
-                is HomeUIEvent.SelectedMonth -> getMonthList(event.mont)
+                is HomeUIEvent.SelectedMonth -> getMonthAndConvertToPdf(event.mont)
             }
         }
         getRoadData()
+    }
+
+    private fun getMonthAndConvertToPdf(month: Int) {
+        getMonthUseCase(month).onEach {
+            setEffect(HomeUIEffect.SendMonth(pdfConverter.createPdf(it, month)))
+        }.launchIn(viewModelScope)
     }
 
     private fun getRoadData() {
@@ -61,23 +67,16 @@ class HomeVM @Inject constructor(
                 )
             )
         } else setEffect(HomeUIEffect.ShowToast("Tarih ve firma boş bırakılamaz"))
-
     }
 
     private fun deleteRoadItem(road: RoadUI) = viewModelScope.launch {
         deleteRoadItemUseCase(road)
     }
 
-    private fun searchCompany(string: String) {
-        Log.e("TAG", "searchCompany: $string")
-        searchUseCase(string.titleCaseFirstChar()).onEach {
+    private fun searchCompany(company: String) {
+        searchUseCase(company.titleCaseFirstChar()).onEach {
             setState(getCurrentState().copy(companyList = it))
         }.launchIn(viewModelScope)
     }
 
-    private fun getMonthList(month: Int) {
-        getMonthUseCase(month).onEach {
-            setEffect(HomeUIEffect.SendMonth(it))
-        }.launchIn(viewModelScope)
-    }
 }

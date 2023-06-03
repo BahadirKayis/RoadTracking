@@ -33,7 +33,7 @@ abstract class SwipeToDeleteCallback(context: Context) :
          * if (viewHolder?.itemViewType == YourAdapter.SOME_TYPE) return 0
          * if (viewHolder?.adapterPosition == 0) return 0
          */
-        if (viewHolder.layoutPosition == 10) return 0
+        if (viewHolder.layoutPosition == LAYOUT_POSITION) return 0
         return super.getMovementFlags(recyclerView, viewHolder)
     }
 
@@ -97,5 +97,9 @@ abstract class SwipeToDeleteCallback(context: Context) :
 
     private fun clearCanvas(c: Canvas?, left: Float, top: Float, right: Float, bottom: Float) {
         c?.drawRect(left, top, right, bottom, clearPaint)
+    }
+
+    companion object {
+        private const val LAYOUT_POSITION = 10
     }
 }

@@ -10,11 +10,7 @@ import com.example.roadtracking.data.model.RoadUI
     entities = [RoadUI::class, Company::class],
     version = 1,
     exportSchema = true,
-
-
-    )
-
+)
 abstract class RoadTrackingDatabase : RoomDatabase() {
     abstract fun roadDao(): RoadTrackingDao
-
 }
