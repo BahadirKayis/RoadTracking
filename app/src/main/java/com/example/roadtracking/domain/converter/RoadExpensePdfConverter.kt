@@ -10,7 +10,6 @@ import java.io.FileOutputStream
 import java.util.Calendar
 import javax.inject.Inject
 
-
 class RoadExpensePdfConverter @Inject constructor(private val context: Context) {
     private val paint = Paint().apply {
         textSize = TITLE_TEXT_SIZE
@@ -25,20 +24,20 @@ class RoadExpensePdfConverter @Inject constructor(private val context: Context) 
         val calendar = Calendar.getInstance()
         val year = calendar.get(Calendar.YEAR)
         val formattedMonth = month.toString().padStart(2, '0')
-        val pdfName = "Kazım Kayış-$formattedMonth-$year.pdf"
+        val pdfName = "-$formattedMonth-$year.pdf"
 
         val pdfDocument = PdfDocument()
         val fontMetrics = paint.fontMetrics
         val lineHeight = fontMetrics.descent - fontMetrics.ascent
         val x = pageInfo.pageWidth / 2f // Metnin ortalanacağı yatay pozisyon
         var y = START_VERTICAL_POSITION // İlk dikey pozisyon
-        val page = pdfDocument.startPage(pageInfo)
-        val canvas = page.canvas
-        canvas.drawText(title, x, y, paint)  // Başlığı PDF sayfasına çizin
+        var page = pdfDocument.startPage(pageInfo)
+        var canvas = page.canvas
+        canvas.drawText(title, x, y, paint) // Başlığı PDF sayfasına çizin
 
-        //Content
+        // Content
         paint.apply {
-            textSize = CONTENT_TEXT_SIZE;isFakeBoldText = false;textAlign = Paint.Align.LEFT
+            textSize = CONTENT_TEXT_SIZE; isFakeBoldText = false; textAlign = Paint.Align.LEFT
         }
         y += lineHeight
         for (item in road) {
@@ -46,6 +45,12 @@ class RoadExpensePdfConverter @Inject constructor(private val context: Context) 
             val company = item.company
             canvas.drawText("$date - $company", COLUMN_X, y, paint)
             y += lineHeight // Yeni bir satıra geçmek için y koordinatını güncelleyin
+            if (y + lineHeight >= PAGE_HEIGHT) {
+                pdfDocument.finishPage(page) // Mevcut sayfayı tamamlayın
+                page = pdfDocument.startPage(pageInfo) // Yeni bir sayfa başlatın
+                canvas = page.canvas // Yeni sayfanın canvas'ını alın
+                y = 50f // Y koordinatını sıfırlayın veya istediğiniz değere ayarlayın
+            }
         }
         pdfDocument.finishPage(page)
         val file = File(context.getExternalFilesDir(null), pdfName)
